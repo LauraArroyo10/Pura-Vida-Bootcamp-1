@@ -1,11 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conectar wallet Stellar</title>
+  <link rel="icon" href="data:,">
+  <style>
+    #status {
+      white-space: pre-line;
+    }
+  </style>
 </head>
 <body>
-  
+  <h1>Mi app de crowdfunding</h1>
+  <button id="connect">Conectar wallet</button>
+  <p id="status" aria-live="polite">Wallet no conectada.</p>
+
+  <script type="module">
+    import freighter from "https://esm.sh/@stellar/freighter-api@6.0.1";
+
+    const button = document.querySelector("#connect");
+    const status = document.querySelector("#status");
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      button.textContent = "Conectando…";
+      status.textContent = "Esperando autorización de la wallet…";
+
+      try {
+        if (window.location.protocol === "file:") {
+          throw new Error(
+            "Abre esta página desde un servidor local (por ejemplo, http://localhost)."
+          );
+        }
+
+        const wallet = await freighter.isConnected();
+        if (wallet.error) {
+          throw new Error(wallet.error.message || "No se pudo verificar la wallet.");
+        }
+        if (!wallet.isConnected) {
+          throw new Error(
+            "No se detectó Varial (antes Freighter). Instala o activa la extensión en Chrome o Firefox y vuelve a cargar esta página."
+          );
+        }
+
+        const access = await freighter.requestAccess();
+        if (access.error) {
+          throw new Error(access.error.message || "No se concedió el acceso.");
+        }
+        if (!access.address) {
+          throw new Error("No se recibió una dirección pública.");
+        }
+
+        const networkInfo = await freighter.getNetwork();
+        if (networkInfo.error) {
+          throw new Error(networkInfo.error.message || "No se pudo obtener la red.");
+        }
+
+        status.textContent =
+          `Dirección pública: ${access.address}\nRed: ${networkInfo.network}`;
+      } catch (error) {
+        status.textContent = `No se pudo conectar: ${error.message}`;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Conectar wallet";
+      }
+    });
+  </script>
 </body>
 </html>
