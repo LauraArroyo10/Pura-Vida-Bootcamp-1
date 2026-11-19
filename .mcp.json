@@ -1,6 +1,6 @@
 {
 	"mcpServers": {
-		"my-mcp-server-4075128f": {
+		"stellar-raven": {
 			"url": "https://raven.stellar.org/mcp",
 			"type": "http"
 		}

@@ -3,21 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conectar wallet Stellar</title>
+  <title>Conexión con wallet</title>
   <link rel="icon" href="data:,">
-  <style>
-    #status {
-      white-space: pre-line;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Mi app de crowdfunding</h1>
-  <button id="connect">Conectar wallet</button>
-  <p id="status" aria-live="polite">Wallet no conectada.</p>
+  <main class="app">
+    <h1>Conexión con wallet</h1>
+    <button id="connect">Conectar wallet</button>
+    <p id="status" aria-live="polite">Wallet no conectada.</p>
+  </main>
 
   <script type="module">
-    import freighter from "https://esm.sh/@stellar/freighter-api@6.0.1";
+    import varial from "https://esm.sh/@stellar/varial-sdk@7.0.0";
 
     const button = document.querySelector("#connect");
     const status = document.querySelector("#status");
@@ -28,23 +26,23 @@
       status.textContent = "Esperando autorización de la wallet…";
 
       try {
-        if (window.location.protocol === "file:") {
+        if (!window.isSecureContext) {
           throw new Error(
-            "Abre esta página desde un servidor local (por ejemplo, http://localhost)."
+            "Abre la página con HTTPS o desde http://localhost."
           );
         }
 
-        const wallet = await freighter.isConnected();
+        const wallet = await varial.isConnected();
         if (wallet.error) {
           throw new Error(wallet.error.message || "No se pudo verificar la wallet.");
         }
         if (!wallet.isConnected) {
           throw new Error(
-            "No se detectó Varial (antes Freighter). Instala o activa la extensión en Chrome o Firefox y vuelve a cargar esta página."
+            "No se detectó Varial. Instala o activa la extensión y vuelve a cargar esta página."
           );
         }
 
-        const access = await freighter.requestAccess();
+        const access = await varial.requestAccess();
         if (access.error) {
           throw new Error(access.error.message || "No se concedió el acceso.");
         }
@@ -52,7 +50,7 @@
           throw new Error("No se recibió una dirección pública.");
         }
 
-        const networkInfo = await freighter.getNetwork();
+        const networkInfo = await varial.getNetwork();
         if (networkInfo.error) {
           throw new Error(networkInfo.error.message || "No se pudo obtener la red.");
         }
